@@ -62,7 +62,12 @@ public protocol DateTimePickerDelegate {
     
     //custom Animation for Day/Night for AM/PM
     public var isAnimationEnabled = false
-    public var isTimeRangeEnabled = false
+    
+    public var isTimeRangeEnabled = false {
+        didSet {
+            self.is12HourFormat = true
+        }
+    }
     
     /// custom background color for date cells
     public var daysBackgroundColor = UIColor(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0, alpha: 1)
@@ -341,7 +346,7 @@ public protocol DateTimePickerDelegate {
         layout.itemSize = CGSize(width: 75, height: 80)
         
         dayCollectionView = UICollectionView(frame: CGRect(x: 0, y: 44, width: contentView.frame.width, height: 100), collectionViewLayout: layout)
-        dayCollectionView.backgroundColor = daysBackgroundColor
+        dayCollectionView.backgroundColor = .clear //daysBackgroundColor
         dayCollectionView.showsHorizontalScrollIndicator = false
         
         if includeMonth {
@@ -367,7 +372,7 @@ public protocol DateTimePickerDelegate {
         contentView.addSubview(borderTopView)
         
         borderBottomView = UIView(frame: CGRect(x: 0, y: dayCollectionView.frame.origin.y + dayCollectionView.frame.height, width: titleView.frame.width, height: 1))
-        borderBottomView.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+        borderBottomView.backgroundColor =  .clear //UIColor.white.withAlphaComponent(0.6)
         if isTimePickerOnly {
             borderBottomView.frame = CGRect(x: 0, y: dayCollectionView.frame.origin.y, width: titleView.frame.width, height: 1)
         }
@@ -675,7 +680,7 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
             
             if self.isTimeRangeEnabled {
                  let nextHour = (indexPath.row % 12) + 1
-                 cell.textLabel?.text = String(format: "%02i - %02i ", nextHour,  (nextHour+1 > 12 ? 0 : nextHour+1) //To avoid 12-13
+                 cell.textLabel?.text = String(format: "%02i - %02i ", nextHour,  (nextHour+1 > 12 ? 1 : nextHour+1) //To avoid 12-13
                 )
             }
         }
@@ -720,13 +725,26 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
             
         } else if tableView == amPmTableView {
             
+            var hoursString = ""
+            for cell in self.hourTableView.visibleCells {
+                
+                if let text = cell.textLabel?.text, cell.isSelected {
+//                    print("Hours text - \(text)")
+                    hoursString = text
+                    
+                    break
+                }
+                
+            }
+            
             if selectedCell?.textLabel?.text?.lowercased() == "pm" {
  
-                self.changeBackgroundNow("PM")
+                
+                self.changeBackgroundNow(hoursString, "PM")
                 
             }
             else{
-                self.changeBackgroundNow("AM")
+                self.changeBackgroundNow(hoursString, "AM")
  
             }
             
@@ -753,22 +771,71 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
     
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if self.amPmTableView == scrollView  {
+        
+        var amPmString = ""
+      
+        if self.amPmTableView == scrollView || self.hourTableView == scrollView  {
             for cell in self.amPmTableView.visibleCells {
                 if let text = cell.textLabel?.text, cell.isSelected {
-                    self.changeBackgroundNow(text)
+                    
+                    amPmString = text
                     break
                 }
             }
             
+            
+            for cell in self.hourTableView.visibleCells {
+                
+                if let text = cell.textLabel?.text, cell.isSelected {
+                    print("Hours text - \(text)")
+                    self.changeBackgroundNow(text, amPmString)
+                    break
+                }
+                
+            }
+
+            
         }
+        
+        
     }
     
-    
-    func changeBackgroundNow(_ str:String) {
+    func changeBackgroundNow(_ hr:String, _ amPm:String) {
         if !self.isAnimationEnabled { return }
-        if str == "AM" {  self.animateToDay() } else { self.animateToNight() }
+        
+      //  if amPm == "AM" {  self.animateToDay() } else { self.animateToNight() }
+        
+        let firstComponentOfHrs = hr.split(separator: " ")
+        let startHr = Int(firstComponentOfHrs[0])! % 12 + 1
+        
+        print("************ \(startHr)\(amPm)")
+        
+        switch startHr{
+        case 1...7:
+            if amPm == "AM" {
+                self.animateToNight()
+            }
+            else{
+                self.animateToDay()
+            }
+            
+            break
+        case 8...12:
+            if amPm == "AM" {
+                self.animateToDay()
+          
+            }
+            else{
+               self.animateToNight()
+            }
+        default:
+            self.animateToDay()
+        }
+        
+        
     }
+    
+ 
     
     func animateToDay() {
         self.contentBgView.alpha = 0
