@@ -45,5 +45,8 @@ class ViewController: UIViewController, DateTimePickerDelegate {
     
     func dateTimePicker(_ picker: DateTimePicker, didSelectDate: Date) {
         title = picker.selectedDateString
+        
+        print("Date : \(picker.selectedDateString)")
+        print("Custom Time Range : \(picker.selectedCustomTimeString) \n")
     }
 }

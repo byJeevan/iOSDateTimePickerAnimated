@@ -183,6 +183,8 @@ public protocol DateTimePickerDelegate {
         }
     }
     
+    public var selectedCustomTimeString = ""
+    
     public var timeZone = TimeZone.current
     public var completionHandler: ((Date)->Void)?
     public var dismissHandler: (() -> Void)?
@@ -729,26 +731,18 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
             for cell in self.hourTableView.visibleCells {
                 
                 if let text = cell.textLabel?.text, cell.isSelected {
-//                    print("Hours text - \(text)")
                     hoursString = text
-                    
                     break
                 }
-                
             }
             
             if selectedCell?.textLabel?.text?.lowercased() == "pm" {
- 
-                
                 self.changeBackgroundNow(hoursString, "PM")
-                
             }
             else{
                 self.changeBackgroundNow(hoursString, "AM")
- 
             }
             
-     
             if let hour = components.hour,
                 indexPath.row == 0 && hour >= 12 {
                 components.hour = hour - 12
@@ -787,7 +781,6 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
             for cell in self.hourTableView.visibleCells {
                 
                 if let text = cell.textLabel?.text, cell.isSelected {
-                    print("Hours text - \(text)")
                     self.changeBackgroundNow(text, amPmString)
                     break
                 }
@@ -802,15 +795,13 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
     
     func changeBackgroundNow(_ hr:String, _ amPm:String) {
         if !self.isAnimationEnabled { return }
-        
-      //  if amPm == "AM" {  self.animateToDay() } else { self.animateToNight() }
-        
+   
         let firstComponentOfHrs = hr.split(separator: " ")
         let startHr = Int(firstComponentOfHrs[0])! % 12 + 1
+       
+        self.selectedCustomTimeString = "\(hr) \(amPm)"
         
-        print("************ \(startHr)\(amPm)")
-        
-        switch startHr{
+        switch startHr {
         case 1...7:
             if amPm == "AM" {
                 self.animateToNight()
