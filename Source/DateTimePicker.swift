@@ -829,6 +829,7 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
  
     
     func animateToDay() {
+        if !isAnimationEnabled { return }
         self.contentBgView.alpha = 0
         self.contentBgView.image = UIImage.init(named: "flat_day.png")
         self.animateMoonAndSun(imageName: "sun.png")
@@ -856,6 +857,7 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
     }
     
     func animateToNight() {
+        if !isAnimationEnabled { return }
         self.contentBgView.alpha = 0
         self.contentBgView.image = UIImage.init(named: "flat_night.png")
         self.animateMoonAndSun(imageName: "moon-satellite.png")
